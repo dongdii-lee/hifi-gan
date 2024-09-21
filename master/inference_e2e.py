@@ -11,6 +11,8 @@ from env import AttrDict
 from meldataset import MAX_WAV_VALUE
 from models import Generator
 
+from PIL import Image # 이미지 파일 오픈 시 pickling 문제 해결 위해 사용
+
 h = None
 device = None
 
@@ -45,7 +47,8 @@ def inference(a):
     generator.remove_weight_norm()
     with torch.no_grad():
         for i, filname in enumerate(filelist):
-            x = np.load(os.path.join(a.input_mels_dir, filname))
+            # x = np.load(os.path.join(a.input_mels_dir, filname))
+            x = Image.open(os.path.join(a.input_mels_dir, filname))
             x = torch.FloatTensor(x).to(device)
             y_g_hat = generator(x)
             audio = y_g_hat.squeeze()
@@ -61,9 +64,9 @@ def main():
     print('Initializing Inference Process..')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_mels_dir', default='test_mel_files')
-    parser.add_argument('--output_dir', default='generated_files_from_mel')
-    parser.add_argument('--checkpoint_file', required=True)
+    parser.add_argument('--input_mels_dir', default='/Users/dongdii/Documents/Visual Studio Code/Kitel/2024/librosa/output')
+    parser.add_argument('--output_dir', default='HiFi-GAN/output/generated_files_from_mel')
+    parser.add_argument('--checkpoint_file', default='/Users/dongdii/Documents/Visual Studio Code/Kitel/2024/HiFi-GAN/master/LJ_V1/generator_v1')
     a = parser.parse_args()
 
     config_file = os.path.join(os.path.split(a.checkpoint_file)[0], 'config.json')
